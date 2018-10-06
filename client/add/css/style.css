@@ -17,30 +17,42 @@ body {
     text-align: center;
     font-size: 3rem;
     margin-top: 3rem;
-    text-shadow: 0 0 20px #A02973;
     color: #7A1F56;
 }
 
-.inputBox {
+.box {
     display: block;
     width: 70%;
     margin-left: 15%;
-    margin-top: 5rem;
+    margin-top: 2rem;
     height: 2rem;
+    line-height: 2rem;
 }
 
-.urlInput {
+.loginBox > input {
+    width: calc((80% - 50px) / 2);
     height: 100%;
-    width: calc(80% - 20px);
     border: none;
-    background-color: #9E8B97;
+    background-color: #404040;
     border-radius: 10px;
     padding-left: 10px;
     padding-right: 10px;
     color: white;
 }
 
-.urlInput::-webkit-input-placeholder {
+.urlInput {
+    height: 100%;
+    width: calc(80% - 20px);
+    border: none;
+    background-color: #404040;
+    border-radius: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: white;
+}
+
+.urlInput::-webkit-input-placeholder,
+.loginBox > input::-webkit-input-placeholder {
     color: silver;
 }
 
@@ -67,14 +79,8 @@ body {
 
 .resultBox {
     background-color: #404040;
-    width: 70%;
-    margin-left: 15%;
-    margin-top: 1rem;
-    height: 2rem;
-    border-radius: 10px;
-    line-height: 2rem;
     text-align: center;
-
+    border-radius: 10px;
 }
 
 .resultBox > a {

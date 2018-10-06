@@ -20,43 +20,57 @@ app.use(function (req, res, next) {
 app.use('/', express.static('../client/add'));
 
 app.get('/api/add', function (req, res) {
-    //check if url makes sense
-    var regex = RegExp(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/);
-    if (!regex.test(req.headers.long)) {
-        res.status(400).send("noURL");
-        return;
-    } else {
-        //Generate random hex-string and check if it already exists in the DB. Generate a new one if it does
-        var hex = "";
-        var inDb = true;
-        while (inDb) {
-            hex = rand_string(5);
-            var x = db.quary("SELECT short FROM urls WHERE short=$short LIMIT 1", {
-                $short: hex
-            }, "vals");
-            inDb = false;
-        };
-
-        var now = new Date();
-
-        //Save all into the db
-        var y = db.quary("INSERT INTO urls(short, long, crDate, crIP) VALUES($short,$long,$date,$ip)", {
-            $short: hex,
-            $long: req.headers.long,
-            $date: now.toISOString(),
-            $ip: req.connection.remoteAddress
-        }, "bool");
-
-        if (y) {
-            res.status(200).send(hex);
+    //Check if the User's session is valid:
+    if (login.checkSession(req.headers.name, req.headers.sid)) {
+        //check if url makes sense
+        var regex = RegExp(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/);
+        if (!regex.test(req.headers.long)) {
+            res.status(400).send("noURL");
+            return;
         } else {
-            res.status(500).send("");
+            //Generate random hex-string and check if it already exists in the DB. Generate a new one if it does
+            var hex = "";
+            var inDb = true;
+            while (inDb) {
+                hex = rand_string(5);
+                var x = db.quary("SELECT short FROM urls WHERE short=$short LIMIT 1", {
+                    $short: hex
+                }, "vals");
+                inDb = false;
+            };
+
+            var now = new Date();
+
+            //Save all into the db
+            var y = db.quary("INSERT INTO urls(short, long, crDate, crIP) VALUES($short,$long,$date,$ip)", {
+                $short: hex,
+                $long: req.headers.long,
+                $date: now.toISOString(),
+                $ip: req.connection.remoteAddress
+            }, "bool");
+
+            if (y) {
+                res.status(200).send(hex);
+            } else {
+                res.status(500).send("");
+            }
         }
-
-
+    } else {
+        res.status(401).send("Unkonw Session-ID");
     }
 });
 
+app.get("/api/login", function (req, res) {
+    var ret = login.checkPW(req.headers.name, req.headers.pw);
+
+
+    if (ret === false) {
+        res.status(401).send("Wrong Username or Password");
+    } else {
+        res.status(200).send(ret);
+    }
+
+});
 
 http.createServer(app).listen(8000, '127.0.0.1');
 logger.write('Server started local at Port 8000');
@@ -155,6 +169,7 @@ var db = {
 
             }
         } catch (err) {
+            //console.log(err);
             return false;
         }
     },
@@ -189,6 +204,66 @@ function rand_string(n) {
     }
     return rs;
 }
+
+function generateSessionToken() {
+    var sha = crypto.createHash('SHA512');
+    sha.update(Math.random().toString());
+    return sha.digest('hex');
+};
+
+var login = {
+    checkPW: function (name, pw) {
+        var rows = db.quary('SELECT * FROM user WHERE name=$name', {
+            $name: db.stringSqlPrepare(name)
+        }, "vals");
+        if (rows.length > 0) {
+            var key = crypto.pbkdf2Sync(pw, name, 1, 200, 'SHA512');
+            if (key.toString('hex') == rows[0].pwHash) {
+                var token = generateSessionToken();
+                var now = new Date();
+                try {
+                    var x = db.quary('UPDATE user SET sessionID =$token, sessionDate=$date WHERE name=$name', {
+                        $token: db.stringSqlPrepare(token),
+                        $date: now.toISOString(),
+                        $name: db.stringSqlPrepare(name)
+                    }, "bool");
+                    if (x) {
+                        var data = {
+                            tk: token,
+                            name: db.stringSqlPrepare(name),
+                            id: rows[0].ID
+                        };
+                        return data;
+                    } else {
+                        return false;
+                    }
+
+                } catch (err) {}
+            }
+        } else {
+            return false;
+        }
+    },
+    checkSession: function (name, session) {
+        var rows = db.quary('SELECT * FROM user WHERE name=$name', {
+            $name: db.stringSqlPrepare(name)
+        }, "vals");
+
+        if (rows.length > 0) {
+            //Return true if the session is not older than 24h(86.400.000ms)
+            var today = new Date();
+            var sessiondate = new Date(rows[0].sessionDate);
+
+            if (rows[0].sessionID == session && parseInt(today - sessiondate) <= 86400000) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+};
 
 /*Exit-handling*/
 function exitHandler(options, err) {

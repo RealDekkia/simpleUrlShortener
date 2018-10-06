@@ -9,11 +9,18 @@
 
 <body>
     <h1 class="topTitle">0815 URL Shortener</h1>
-    <div class="inputBox">
-        <input type="url" class="urlInput" id="urlInput" placeholder="URL">
-        <div class="button" id="urlSend">Kürzen!</div>
+    <div class="loginBox box">
+        <input type="text" class="userNameInput" id="userNameInput" placeholder="Username">
+        <input type="text" class="passwordInput" id="passwordInput" placeholder="Password">
+        <div class="button" id="loginButton">Login</div>
     </div>
-    <div class="resultBox" id="resultBox"></div>
+    <div class="inputBox box">
+        <input type="url" class="urlInput" id="urlInput" placeholder="URL">
+        <div class="button" id="urlSend">Shorten</div>
+    </div>
+    <div class="resultBox box" id="resultBox"></div>
+
+    <script src="js/cookies.js" type="text/javascript"></script>
     <script src="js/script.js" type="text/javascript"></script>
 </body>
 
