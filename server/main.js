@@ -17,7 +17,7 @@ app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "*");
     next();
 });
-app.use('/', express.static('../client'));
+app.use('/', express.static('../client/add'));
 
 app.get('/api/add', function (req, res) {
     //check if url makes sense
@@ -57,7 +57,16 @@ app.get('/api/add', function (req, res) {
     }
 });
 
-app.use('/r', function (req, res) {
+
+http.createServer(app).listen(8000, '127.0.0.1');
+logger.write('Server started local at Port 8000');
+
+const appPublic = express();
+appPublic.use('/', function (req, res) {
+    if (req.url.length != 6) {
+        res.status(400).send("unknownURl");
+        return;
+    }
     var x = db.quary("SELECT long FROM urls WHERE short=$short LIMIT 1", {
         $short: db.stringSqlPrepare(req.url.substring(1))
     }, "vals");
@@ -69,10 +78,8 @@ app.use('/r', function (req, res) {
         res.status(400).send("unknownURl");
     }
 });
-
-
-http.createServer(app).listen(8000, '127.0.0.1');
-logger.write('Server started local at Port 8000');
+http.createServer(appPublic).listen(8001, '127.0.0.1');
+logger.write('Public Server started local at Port 8001');
 
 const dbDir = "database.db3";
 

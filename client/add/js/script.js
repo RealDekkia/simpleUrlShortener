@@ -23,7 +23,7 @@ document.getElementById("urlSend").addEventListener("click", function () {
     addURL(url, function (e) {
         console.log(e);
         console.log("<a href=" + localURl + "/r/" + e);
-        document.getElementById("resultBox").innerHTML = "<a href=" + localURl + "/r/" + e + ">" + localURl + "/r/" + e + "</a>";
+        document.getElementById("resultBox").innerHTML = "<a href=" + localURl + "/" + e + ">" + localURl + "/r/" + e + "</a>";
     });
     document.getElementById("urlInput").value = "";
 });
