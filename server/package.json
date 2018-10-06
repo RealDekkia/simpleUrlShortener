@@ -1,0 +1,15 @@
+{
+  "name": "basicurlshortener",
+  "version": "1.0.0",
+  "description": "a very very very basic url-shortener with a sqlite database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dekkia",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3",
+    "sql.js": "^0.5.0"
+  }
+}
