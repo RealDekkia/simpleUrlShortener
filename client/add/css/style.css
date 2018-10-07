@@ -67,6 +67,7 @@ body {
     color: white;
     border-radius: 10px;
     transition: background-color 0.3s;
+    cursor: pointer;
 }
 
 .button:hover {
@@ -75,6 +76,13 @@ body {
 
 .button:active {
     background-color: #404040;
+}
+
+.disabledButton,
+.disabledButton:active,
+.disabledButton:hover {
+    background-color: #404040;
+    cursor: default;
 }
 
 .resultBox {

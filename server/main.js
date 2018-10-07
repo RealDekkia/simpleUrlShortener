@@ -62,14 +62,38 @@ app.get('/api/add', function (req, res) {
 
 app.get("/api/login", function (req, res) {
     var ret = login.checkPW(req.headers.name, req.headers.pw);
-
-
-    if (ret === false) {
+    if (ret == false) {
         res.status(401).send("Wrong Username or Password");
     } else {
         res.status(200).send(ret);
     }
 
+});
+
+app.get("/api/checkSession", function (req, res) {
+    var ret = login.checkSession(req.headers.name, req.headers.sid);
+    if (ret === false) {
+        res.status(401).send("Invalid Session");
+    } else {
+        var dat = login.updateSession(req.headers.name);
+        res.status(200).send(dat);
+    }
+});
+
+app.get("/api/listurls", function (req, res) {
+    if (login.checkSession(req.headers.name, req.headers.sid)) {
+        var rows = db.quary('SELECT short, long, crDate FROM urls LIMIT $limit OFFSET $offset', {
+            $limit: db.stringSqlPrepare(req.headers.limit),
+            $offset: db.stringSqlPrepare(req.headers.offset)
+        }, "vals");
+        if (rows.length >= 0) {
+            res.status(200).send(JSON.stringify(rows));
+        } else {
+            res.status(500).send("");
+        }
+    } else {
+        res.status(401).send("Unkonw Session-ID");
+    }
 });
 
 http.createServer(app).listen(8000, '127.0.0.1');
@@ -169,7 +193,7 @@ var db = {
 
             }
         } catch (err) {
-            //console.log(err);
+            console.log(err);
             return false;
         }
     },
@@ -219,26 +243,9 @@ var login = {
         if (rows.length > 0) {
             var key = crypto.pbkdf2Sync(pw, name, 1, 200, 'SHA512');
             if (key.toString('hex') == rows[0].pwHash) {
-                var token = generateSessionToken();
-                var now = new Date();
-                try {
-                    var x = db.quary('UPDATE user SET sessionID =$token, sessionDate=$date WHERE name=$name', {
-                        $token: db.stringSqlPrepare(token),
-                        $date: now.toISOString(),
-                        $name: db.stringSqlPrepare(name)
-                    }, "bool");
-                    if (x) {
-                        var data = {
-                            tk: token,
-                            name: db.stringSqlPrepare(name),
-                            id: rows[0].ID
-                        };
-                        return data;
-                    } else {
-                        return false;
-                    }
 
-                } catch (err) {}
+                var session = login.updateSession(name);
+                return session;
             }
         } else {
             return false;
@@ -261,6 +268,29 @@ var login = {
             }
         } else {
             return false;
+        }
+    },
+    updateSession: function (name) {
+        var token = generateSessionToken();
+        var now = new Date();
+        try {
+            var x = db.quary('UPDATE user SET sessionID =$token, sessionDate=$date WHERE name=$name', {
+                $token: db.stringSqlPrepare(token),
+                $date: now.toISOString(),
+                $name: db.stringSqlPrepare(name)
+            }, "bool");
+            if (x) {
+                var data = {
+                    tk: token,
+                    name: db.stringSqlPrepare(name)
+                };
+                return data;
+            } else {
+                return false;
+            }
+
+        } catch (err) {
+            console.log(err);
         }
     }
 };
