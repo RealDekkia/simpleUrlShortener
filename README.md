@@ -29,3 +29,12 @@ The Apache2-configuration looks something like this:
 I use the Node-Module [Forever](https://www.npmjs.com/package/forever) to start the server
 
 There's also a Chronjob that autostarts it after a Hardware-Reboot.
+
+# Future Updates
+I'll be adding stuff like:
+
+ - Listing and Searching for already shortened URLs
+ - an option to add users
+ - a config-option to allow anonymous creation of URLs
+ - some kind of admin-dashboard
+ - ...
