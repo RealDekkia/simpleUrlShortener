@@ -94,3 +94,30 @@ body {
 .resultBox > a {
     color: white;
 }
+
+.listHeader,
+.listItem {
+    background-color: #404040;
+    border-radius: 10px;
+    color: white;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.listItem {
+    margin-top: 0.5rem;
+}
+
+.listItem > span:nth-child(1) {
+    width: 1rem;
+    display: inline-block;
+}
+
+.listItem > span:nth-child(1),
+.listItem > span:nth-child(2) {
+    margin-right: 1rem;
+}
+
+.listItem > span:nth-child(4) {
+    float: right;
+}
