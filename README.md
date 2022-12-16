@@ -1,5 +1,7 @@
 # simpleUrlShortener
 
+## This program uses versions of libraries with known security issues. I don't use it anymore so I won't be fixing them.
+
 This is a very simple URL-Shortener in NodeJS. ~~I don't recommend using it.~~
 
 It's not very sercure as is.
